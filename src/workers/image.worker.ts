@@ -12,7 +12,7 @@ async function fonts() {
       ['Stillframe Sans', 'sans.woff2'],
       ['Stillframe Serif', 'serif.woff2'],
     ].map(async ([name, file]) => {
-      const f = new FontFace(name, `url(${new URL('/fonts/' + file, self.location.origin)})`);
+      const f = new FontFace(name, `url(${new URL(`${import.meta.env.BASE_URL}fonts/${file}`, self.location.origin)})`);
       await f.load();
       (self as any).fonts.add(f);
     }),
