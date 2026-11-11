@@ -792,27 +792,23 @@ export default function App() {
                 导出
               </button>
             </nav>
-            <div className={styles.photoInfo}>
-              {cameraLogo(p.metadata.make, p.metadata.model) && (
-                <img
-                  src={cameraLogo(p.metadata.make, p.metadata.model)}
-                  alt={`${matchBrand(p.metadata.make, p.metadata.model)?.name}相机 Logo`}
-                />
-              )}
-              <span data-testid="photo-summary">
-                {[
-                  textFor({ binding: 'camera', text: '' }, p.metadata),
-                  textFor({ binding: 'parameters', text: '' }, p.metadata),
-                ]
-                  .filter(Boolean)
-                  .join(' · ') || '已自动检查 EXIF · 未找到拍摄信息，可手动补填'}
-              </span>
-              <button onClick={() => navigate('/editor?panel=metadata')}>编辑信息</button>
-            </div>
             <div className={styles.canvasBar}>
-              <div>
-                {p.file.name}
-                <span>{saveState}</span>
+              <div className={styles.photoInfo} title={p.file.name}>
+                {cameraLogo(p.metadata.make, p.metadata.model) && (
+                  <img
+                    src={cameraLogo(p.metadata.make, p.metadata.model)}
+                    alt={`${matchBrand(p.metadata.make, p.metadata.model)?.name}相机 Logo`}
+                  />
+                )}
+                <span data-testid="photo-summary">
+                  {[
+                    textFor({ binding: 'camera', text: '' }, p.metadata),
+                    textFor({ binding: 'parameters', text: '' }, p.metadata),
+                  ]
+                    .filter(Boolean)
+                    .join(' · ') || '已自动检查 EXIF · 未找到拍摄信息，可手动补填'}
+                </span>
+                <button onClick={() => navigate('/editor?panel=metadata')}>编辑信息</button>
               </div>
               <div>
                 <button
@@ -831,11 +827,12 @@ export default function App() {
                 >
                   <Redo2 size={16} />
                 </button>
-                <span>{previewStatus}</span>
+                <span title={saveState}>{previewStatus}</span>
               </div>
             </div>
             <Suspense fallback={<div className="canvas-viewport">正在准备画布…</div>}>
               <CanvasEditor
+                key={p.id}
                 photo={p}
                 theme={theme}
                 onStatus={setPreviewStatus}

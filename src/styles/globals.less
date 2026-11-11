@@ -299,3 +299,34 @@ html,
 body {
   overflow-x: clip;
 }
+
+.canvas-editor {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.canvas-editor .canvas-viewport {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.canvas-editor .paper-shadow {
+  margin: auto;
+  outline: 1px solid var(--line);
+}
+.canvas-zoom {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 2px 0;
+}
+.canvas-zoom button {
+  min-width: 32px;
+  padding: 3px 8px;
+}

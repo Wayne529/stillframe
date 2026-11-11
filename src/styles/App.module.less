@@ -1386,3 +1386,88 @@
     background: var(--soft);
   }
 }
+
+.workspace {
+  grid-template-columns: clamp(152px, 13vw, 192px) minmax(0, 1fr) clamp(224px, 20vw, 272px);
+
+  .sidebar,
+  .inspector {
+    padding: 12px 10px;
+  }
+  .center {
+    padding: 0 8px;
+  }
+  .editingActions {
+    padding: 2px 0;
+    gap: 2px;
+    button {
+      padding: 4px 5px;
+    }
+    small {
+      display: none;
+    }
+  }
+  .canvasBar {
+    min-height: 30px;
+    gap: 6px;
+    .photoInfo {
+      flex: 1;
+      padding: 0;
+      border: 0;
+      gap: 4px;
+      > span {
+        display: block;
+      }
+      img {
+        width: 24px;
+        height: 18px;
+      }
+    }
+    :global(.icon-button) {
+      width: 26px;
+      height: 26px;
+    }
+  }
+  .filmstrip {
+    padding: 3px 0;
+  }
+  .filmTitle {
+    display: none;
+  }
+  .queue {
+    gap: 5px;
+    padding-bottom: 0;
+    > div {
+      flex-basis: 64px;
+    }
+    .photoSelect img {
+      height: 30px;
+    }
+    .photoSelect span {
+      padding: 2px 1px 0;
+    }
+    .remove {
+      top: 2px;
+      right: 2px;
+    }
+  }
+}
+
+@media (max-width: 1000px) {
+  .workspace {
+    grid-template-columns: 128px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 3fr) minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .workspace {
+    grid-template-columns: 96px minmax(0, 1fr);
+    .sidebar,
+    .inspector {
+      padding: 8px 6px;
+    }
+    .center {
+      padding: 0 4px;
+    }
+  }
+}

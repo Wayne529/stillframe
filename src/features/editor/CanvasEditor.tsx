@@ -205,6 +205,7 @@ export function CanvasEditor({
   const wrapper = useRef<HTMLDivElement>(null),
     stage = useRef<Konva.Stage>(null),
     tr = useRef<Konva.Transformer>(null),
+    [magnification, setMagnification] = useState(1),
     [width, setWidth] = useState(800),
     [height, setHeight] = useState(650),
     [bitmap, setBitmap] = useState<ImageBitmap>(),
@@ -282,62 +283,96 @@ export function CanvasEditor({
     ctx.fillRect(0, 0, d.width, d.height);
     setBackdrop(canvas);
   }, [bitmap, d.template, d.width, d.height]);
-  const zoom = Math.min((width - 60) / d.width, Math.max(100, height - 54) / d.height, 1.2);
+  const fit = Math.max(0.001, Math.min((width - 8) / d.width, (height - 8) / d.height));
+  const zoom = fit * magnification;
+  function changeZoom(value: number) {
+    const viewport = wrapper.current;
+    if (!viewport) return;
+    const ratio = value / magnification;
+    const nextLeft =
+      (viewport.scrollLeft + Math.min(viewport.clientWidth, d.width * zoom + 8) / 2) * ratio -
+      viewport.clientWidth / 2;
+    const nextTop =
+      (viewport.scrollTop + Math.min(viewport.clientHeight, d.height * zoom + 8) / 2) * ratio -
+      viewport.clientHeight / 2;
+    setMagnification(value);
+    requestAnimationFrame(() => viewport.scrollTo(nextLeft, nextTop));
+  }
   const node = d.nodes.find((n) => n.id === selectedId);
   useEffect(() => {
     const target = stage.current?.findOne('#' + selectedId);
     tr.current?.nodes(target && node?.visible && !node.locked ? [target] : []);
   }, [selectedId, d.nodes, bitmap, zoom, fontTick]);
   return (
-    <div ref={wrapper} className="canvas-viewport">
-      <div className="paper-shadow" style={{ width: d.width * zoom, height: d.height * zoom }}>
-        <Stage
-          ref={stage}
-          width={d.width * zoom}
-          height={d.height * zoom}
-          scaleX={zoom}
-          scaleY={zoom}
-          onMouseDown={(e) => {
-            if (e.target === e.target.getStage()) select('');
-          }}
-        >
-          <Layer>
-            {backdrop && (
-              <KImage image={backdrop} width={d.width} height={d.height} listening={false} />
-            )}
-            {d.nodes.map((n) => (
-              <Element
-                key={n.id}
-                node={n}
-                photo={photo}
-                bitmap={bitmap}
-                onSelect={() => {
-                  select(n.id);
-                  onNodeSelect?.();
-                }}
+    <div className="canvas-editor">
+      <div ref={wrapper} className="canvas-viewport" tabIndex={0} aria-label="图片编辑画布">
+        <div className="paper-shadow" style={{ width: d.width * zoom, height: d.height * zoom }}>
+          <Stage
+            ref={stage}
+            width={d.width * zoom}
+            height={d.height * zoom}
+            scaleX={zoom}
+            scaleY={zoom}
+            onMouseDown={(e) => {
+              if (e.target === e.target.getStage()) select('');
+            }}
+          >
+            <Layer>
+              {backdrop && (
+                <KImage image={backdrop} width={d.width} height={d.height} listening={false} />
+              )}
+              {d.nodes.map((n) => (
+                <Element
+                  key={n.id}
+                  node={n}
+                  photo={photo}
+                  bitmap={bitmap}
+                  onSelect={() => {
+                    select(n.id);
+                    onNodeSelect?.();
+                  }}
+                />
+              ))}
+            </Layer>
+            <Layer>
+              <Transformer
+                ref={tr}
+                rotateEnabled
+                keepRatio={node?.keepRatio ?? true}
+                flipEnabled={false}
+                borderStroke={theme === 'light' ? '#526da6' : '#c8ad82'}
+                anchorStroke={theme === 'light' ? '#526da6' : '#c8ad82'}
+                anchorFill={theme === 'light' ? '#fcfdfe' : '#17181b'}
+                anchorSize={7}
+                boundBoxFunc={(old, b) =>
+                  Math.abs(b.width) < 10 || Math.abs(b.height) < 10 ? old : b
+                }
               />
-            ))}
-          </Layer>
-          <Layer>
-            <Transformer
-              ref={tr}
-              rotateEnabled
-              keepRatio={node?.keepRatio ?? true}
-              flipEnabled={false}
-              borderStroke={theme === 'light' ? '#526da6' : '#c8ad82'}
-              anchorStroke={theme === 'light' ? '#526da6' : '#c8ad82'}
-              anchorFill={theme === 'light' ? '#fcfdfe' : '#17181b'}
-              anchorSize={7}
-              boundBoxFunc={(old, b) =>
-                Math.abs(b.width) < 10 || Math.abs(b.height) < 10 ? old : b
-              }
-            />
-          </Layer>
-        </Stage>
+            </Layer>
+          </Stage>
+        </div>
       </div>
-      <span className="canvas-dimensions">
-        {Math.round(d.width)} × {Math.round(d.height)} 逻辑单位 · 选框不会进入成片
-      </span>
+      <div className="canvas-zoom" role="group" aria-label="画布视图缩放">
+        <button
+          type="button"
+          aria-label="缩小视图"
+          disabled={magnification <= 1}
+          onClick={() => changeZoom(Math.max(1, magnification / 1.25))}
+        >
+          −
+        </button>
+        <button type="button" aria-label="适应画布" title="适应画布" onClick={() => changeZoom(1)}>
+          {Math.round(magnification * 100)}%
+        </button>
+        <button
+          type="button"
+          aria-label="放大视图"
+          disabled={magnification >= 4}
+          onClick={() => changeZoom(Math.min(4, magnification * 1.25))}
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 }
